@@ -186,14 +186,29 @@ int MvtxAlign::ReadAlignmentParFile()
     MvtxDefUtil util;
 
     string line;
+    static bool is_first = true;
+    float bc0_x = 0;
+    float bc0_y = 0;
+    float bc0_z = 0;
     while ( getline(fin, line) )
     {
       int lyr, stave, chip;
-      float dx = 0;
-      float dy = 0;
-      float dz = 0;
+      float bcx, bcy, bcz;
 
-      sscanf(line.c_str(), "%d %d %d %f %f %f", &lyr, &stave, &chip, &dx, &dy, &dz);
+      sscanf(line.c_str(), "%d %d %d %f %f %f", &lyr, &stave, &chip, &bcx, &bcy, &bcz);
+
+      if ( is_first )
+      {
+        bc0_x = bcx;
+        bc0_y = bcy;
+        bc0_z = bcz;
+        is_first = false;
+      }
+
+      double dx = bc0_x - bcx;
+      double dy = bc0_y - bcy;
+      double dz = bc0_z - bcz;
+
       AddAlignmentPar(
         util.GenHitSetKey(lyr, stave, chip),
         double(dx), double(dy), double(dz));
