@@ -1,6 +1,6 @@
 #include "MvtxAlign.h"
 
-#include "mvtx/MvtxDefUtil.h"
+#include <mvtx/MvtxDefUtil.h>
 
 #include <trackbase/TrkrClusterContainer.h>
 #include <trackbase/TrkrClusterv1.h>
@@ -11,14 +11,6 @@
 #include <phool/PHIODataNode.h>
 #include <phool/PHNodeIterator.h>
 #include <phool/getClass.h>
-#include <g4detectors/PHG4CellContainer.h>
-#include <g4detectors/PHG4CylinderCellGeomContainer.h>
-#include <g4detectors/PHG4CylinderGeomContainer.h>
-#include <g4detectors/PHG4CylinderGeom.h>
-#include <g4detectors/PHG4CylinderGeom_MAPS.h>
-#include <g4detectors/PHG4CylinderGeom_Siladders.h>
-#include <g4detectors/PHG4Cell.h>
-#include <g4detectors/PHG4CylinderCellGeom.h>
 #include <phool/recoConsts.h>
 
 #include <iostream>

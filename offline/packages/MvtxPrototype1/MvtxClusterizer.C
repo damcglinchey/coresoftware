@@ -282,7 +282,7 @@ void MvtxClusterizer::ClusterMvtx(PHCompositeNode *topNode) {
         ++nhits;
       } //mapitr
 
-      float thickness = 0;
+      float thickness = 50.e-4/28e-4;
       float phisize = phibins.size();
       float zsize = zbins.size();
 
@@ -304,22 +304,23 @@ void MvtxClusterizer::ClusterMvtx(PHCompositeNode *topNode) {
       float invsqrt12 = 1.0 / sqrt(12.0);
 
       TMatrixF DIM(3, 3);
-      DIM[0][0] = pow(0.5 * thickness, 2);
+      DIM[0][0] = pow(0.5 * phisize, 2);
+
       DIM[0][1] = 0.0;
       DIM[0][2] = 0.0;
       DIM[1][0] = 0.0;
-      DIM[1][1] = pow(0.5 * phisize, 2);
+      DIM[1][1] = pow(0.5 * thickness, 2);
       DIM[1][2] = 0.0;
       DIM[2][0] = 0.0;
       DIM[2][1] = 0.0;
       DIM[2][2] = pow(0.5 * zsize, 2);
 
       TMatrixF ERR(3, 3);
-      ERR[0][0] = pow(0.5 * thickness * invsqrt12, 2);
+      ERR[0][0] = pow(0.5 * phisize * invsqrt12, 2);
       ERR[0][1] = 0.0;
       ERR[0][2] = 0.0;
       ERR[1][0] = 0.0;
-      ERR[1][1] = pow(0.5 * phisize * invsqrt12, 2);
+      ERR[1][1] = pow(0.5 * thickness * invsqrt12, 2);
       ERR[1][2] = 0.0;
       ERR[2][0] = 0.0;
       ERR[2][1] = 0.0;
