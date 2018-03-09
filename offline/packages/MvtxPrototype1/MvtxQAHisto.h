@@ -7,8 +7,10 @@
 //Forward declerations
 class PHCompositeNode;
 class TrkrClusterContainer;
+class TrkrHitSetContainer;
 class TFile;
 class TH1F;
+class TH2F;
 
 //Brief: basic ntuple and histogram creation for sim evaluation
 class MvtxQAHisto: public SubsysReco
@@ -43,9 +45,29 @@ class MvtxQAHisto: public SubsysReco
   //flags
   unsigned int _flags;
 
-	TH1F *h_nclus[4]; //cluster in a chip per event 
+	float beam_x[4];
+	float beam_y[4];
+
+	TH2F *h2d_hit[4];
+	TH2F *h2d_hit_beam[4];
+	TH2F *h2d_hit_trk[4];
+	TH1F *h1d_hit_per_evt[4];
+
+	TH2F *h2d_clus[4];
+	TH2F *h2d_clus_beam[4];
+	TH1F *h1d_clus_per_evt[4]; //cluster in a chip per event 
+	TH1F *h1d_clus_size_x[4]; 
+	TH1F *h1d_clus_size_z[4]; 
 
 	TrkrClusterContainer *cluscon;
+	TrkrHitSetContainer *hitsetcon;
+
+	TH1F *h1d_trk_finder_x;
+	TH1F *h1d_trk_finder_z;
+	TH2F *h2d_trk_finder;
+
+	TH1F *h1d_clus_associated;
+	TH1F *h1d_clus_eff;
 
 
 };

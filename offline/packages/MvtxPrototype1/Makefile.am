@@ -27,6 +27,7 @@ pkginclude_HEADERS = \
   MvtxApplyHotDead.h \
   MvtxClusterizer.h \
   MvtxUnpackPRDF.h \
+  MvtxRunInfoUnpackPRDF.h \
   MvtxQAHisto.h 
 
 libMvtxPrototype1_la_SOURCES = \
@@ -38,6 +39,8 @@ libMvtxPrototype1_la_SOURCES = \
   MvtxClusterizer_Dict.C \
   MvtxUnpackPRDF.C \
   MvtxUnpackPRDF_Dict.C \
+  MvtxRunInfoUnpackPRDF.C \
+  MvtxRunInfoUnpackPRDF_Dict.C \
   MvtxQAHisto.C \
   MvtxQAHisto_Dict.C
 
