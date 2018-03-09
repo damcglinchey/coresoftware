@@ -36,7 +36,7 @@ public:
   ~MvtxStandaloneTracking();
 
   //! run tracking
-  void RunTracking(PHCompositeNode* topNode, MvtxTrackList &trklst);
+  void RunTracking(PHCompositeNode* topNode, MvtxTrackList &trklst, std::vector<int> &lyrs);
 
   //! set association window
   void SetWindowX(float w) { window_x_ = w; }
@@ -48,7 +48,7 @@ public:
 private:
 
   //! Associate clusters into track candidates
-  void AssociateClusters(MvtxTrackList &trklst);
+  void AssociateClusters(MvtxTrackList &trklst, std::vector<int> &lyrs);
 
   //! Fit track in x vs y
   void TrackFitXY(MvtxTrack &trk);
@@ -58,6 +58,11 @@ private:
 
   //! Generalized least squares fitter
   TVectorD SolveGLS(TMatrixD &X, TVectorD &y, TMatrixD &L);
+
+
+  double CalcSlope(double x0, double y0, double x1, double y1);
+  double CalcIntecept(double x0, double y0, double m);
+  double CalcProjection(double x, double m, double b);
 
   //! Print out track candidate information
   void PrintTrackCandidates(MvtxTrackList &trklst);
@@ -71,7 +76,7 @@ private:
 
   // verbosity
   int verbosity_;
-  
+
   static const int NLYR = 4;
 
 };

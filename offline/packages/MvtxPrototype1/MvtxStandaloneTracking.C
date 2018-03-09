@@ -29,8 +29,14 @@ MvtxStandaloneTracking::~MvtxStandaloneTracking()
 }
 
 void
-MvtxStandaloneTracking::RunTracking(PHCompositeNode* topNode, MvtxTrackList &trklst)
+MvtxStandaloneTracking::RunTracking(PHCompositeNode* topNode, MvtxTrackList &trklst, std::vector<int> &lyrs)
 {
+  // check for appropriate layers
+  if ( lyrs.size() < 3 || lyrs.size() > 4 )
+  {
+    std::cout << PHWHERE << "ERROR: Inappropriate number of input layers - " << lyrs.size() << std::endl;
+    return;
+  }
 
   trklst.clear();
 
@@ -48,7 +54,7 @@ MvtxStandaloneTracking::RunTracking(PHCompositeNode* topNode, MvtxTrackList &trk
   //------
   //--- associate clusters
   //------
-  AssociateClusters(trklst);
+  AssociateClusters(trklst, lyrs);
 
   if ( verbosity_ > 0 )
     std::cout << PHWHERE << " Finished associating clusters. N candidates:" << trklst.size() << std::endl;
@@ -74,12 +80,92 @@ MvtxStandaloneTracking::RunTracking(PHCompositeNode* topNode, MvtxTrackList &trk
 }
 
 void
-MvtxStandaloneTracking::AssociateClusters(MvtxTrackList &trklst)
+MvtxStandaloneTracking::AssociateClusters(MvtxTrackList &trklst, std::vector<int> &lyrs)
 {
 
-  // --- get clusters
+  // --- utility class
   TrkrDefUtil util;
 
+
+  // --- loop over all clusters in the first desired layer
+  TrkrClusterContainer::ConstRange clusrange0 =
+    clusters_->GetClusters(TrkrDefs::TRKRID::mvtx_id, lyrs.at(0));
+  for ( TrkrClusterContainer::ConstIterator iter0 = clusrange0.first;
+        iter0 != clusrange0.second;
+        ++iter0)
+  {
+
+    // -- loop over all clusters in the second desired layer
+    TrkrClusterContainer::ConstRange clusrange1 =
+      clusters_->GetClusters(TrkrDefs::TRKRID::mvtx_id, lyrs.at(1));
+    for ( TrkrClusterContainer::ConstIterator iter1 = clusrange1.first;
+          iter1 != clusrange1.second;
+          ++iter1)
+    {
+
+      // get clusters
+      TrkrCluster* clus0 = iter0->second;
+      TrkrCluster* clus1 = iter1->second;
+
+      // calculate slope & interecept in xy plane
+      double mxy = CalcSlope(clus0->GetY(), clus0->GetX(), clus1->GetY(), clus1->GetX());
+      double bxy = CalcIntecept(clus0->GetY(), clus0->GetX(), mxy);
+
+      // calculate slope & interecept in zy plane
+      double mzy = CalcSlope(clus0->GetY(), clus0->GetZ(), clus1->GetY(), clus1->GetZ());
+      double bzy = CalcIntecept(clus0->GetY(), clus0->GetZ(), mxy);
+
+      // -- loop over all clusters in the third desired layer
+      TrkrClusterContainer::ConstRange clusrange2 =
+        clusters_->GetClusters(TrkrDefs::TRKRID::mvtx_id, lyrs.at(2));
+      for ( TrkrClusterContainer::ConstIterator iter2 = clusrange2.first;
+            iter2 != clusrange2.second;
+            ++iter2)
+      {
+
+        // check that the projection is within our window
+        if ( fabs((iter2->second)->GetX() - CalcProjection((iter2->second)->GetY(), mxy, bxy)) < window_x_ &&
+             fabs((iter2->second)->GetZ() - CalcProjection((iter2->second)->GetY(), mzy, bzy)) < window_z_ )
+        {
+
+          // make the candidate
+          MvtxTrack trk;
+          (trk.ClusterList).push_back(iter0->second);
+          (trk.ClusterList).push_back(iter1->second);
+          (trk.ClusterList).push_back(iter2->second);
+
+          // if there's another layer, require it
+          if ( lyrs.size() > 3 )
+          {
+            TrkrClusterContainer::ConstRange clusrange3 =
+              clusters_->GetClusters(TrkrDefs::TRKRID::mvtx_id, lyrs.at(3));
+            for ( TrkrClusterContainer::ConstIterator iter3 = clusrange3.first;
+                  iter3 != clusrange3.second;
+                  ++iter3)
+            {
+
+              // check that the projection is within our window
+              if ( fabs((iter3->second)->GetX() - CalcProjection((iter3->second)->GetY(), mxy, bxy)) < window_x_ &&
+                   fabs((iter3->second)->GetZ() - CalcProjection((iter3->second)->GetY(), mzy, bzy)) < window_z_ )
+              {
+
+                (trk.ClusterList).push_back(iter3->second);
+                trklst.push_back(trk);
+              }
+            }
+          }
+          // else we're done
+          else
+          {
+            trklst.push_back(trk);
+          }
+
+        }
+      } // clusrange 2
+    } // clusrange 1
+  } // clusrange 0
+
+  /*
   std::multimap<int, TrkrCluster*> lyrclustermap;
   TrkrClusterContainer::ConstRange clusrange = clusters_->GetClusters();
   for ( TrkrClusterContainer::ConstIterator iter = clusrange.first;
@@ -157,6 +243,7 @@ MvtxStandaloneTracking::AssociateClusters(MvtxTrackList &trklst)
       } // layer 2
     } // layer 1
   } // layer 0
+  */
 
 }
 
@@ -331,5 +418,23 @@ MvtxStandaloneTracking::PrintTrackCandidates(MvtxTrackList &trklst)
               << std::endl;
   } // i
   std::cout << "===================================================" << std::endl;
+}
+
+double
+MvtxStandaloneTracking::CalcSlope(double x0, double y0, double x1, double y1)
+{
+  return (y1 - y0) / (x1 - x0);
+}
+
+double
+MvtxStandaloneTracking::CalcIntecept(double x0, double y0, double m)
+{
+  return y0 - x0 * m;
+}
+
+double
+MvtxStandaloneTracking::CalcProjection(double x, double m, double b)
+{
+  return m * x + b;
 }
 
