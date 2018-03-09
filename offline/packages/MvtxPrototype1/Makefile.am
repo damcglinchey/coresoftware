@@ -26,8 +26,9 @@ pkginclude_HEADERS = \
   MvtxAlign.h \
   MvtxApplyHotDead.h \
   MvtxClusterizer.h \
-  MvtxUnpackPRDF.h \
   MvtxRunInfoUnpackPRDF.h \
+  MvtxStandaloneTracking.h \
+  MvtxUnpackPRDF.h \
   MvtxQAHisto.h 
 
 libMvtxPrototype1_la_SOURCES = \
@@ -37,10 +38,12 @@ libMvtxPrototype1_la_SOURCES = \
   MvtxApplyHotDead_Dict.C \
   MvtxClusterizer.C \
   MvtxClusterizer_Dict.C \
-  MvtxUnpackPRDF.C \
-  MvtxUnpackPRDF_Dict.C \
   MvtxRunInfoUnpackPRDF.C \
   MvtxRunInfoUnpackPRDF_Dict.C \
+  MvtxStandaloneTracking.C \
+  MvtxStandaloneTracking_Dict.C \
+  MvtxUnpackPRDF.C \
+  MvtxUnpackPRDF_Dict.C \
   MvtxQAHisto.C \
   MvtxQAHisto_Dict.C
 
