@@ -15,10 +15,12 @@
 #include <iostream>
 #include <utility>
 #include <stdio.h>
+#include <map>
 
 MvtxStandaloneTracking::MvtxStandaloneTracking()
   : window_x_(10)
   , window_z_(10)
+  , ghostrejection_(false)
   , verbosity_(0)
 {
 
@@ -74,6 +76,8 @@ MvtxStandaloneTracking::RunTracking(PHCompositeNode* topNode, MvtxTrackList &trk
   //------
   // --- choose best tracks
   //------
+  if ( ghostrejection_ && trklst.size() > 1 )
+    RunGhostRejection(trklst);
 
   // --- done
   return;
@@ -165,6 +169,113 @@ MvtxStandaloneTracking::AssociateClusters(MvtxTrackList &trklst, std::vector<int
     } // clusrange 1
   } // clusrange 0
 
+}
+
+
+void
+MvtxStandaloneTracking::RunGhostRejection(MvtxTrackList &trklst)
+{
+  if ( verbosity_ > 0 )
+    std::cout << PHWHERE << " Running Ghost Rejection on "
+              << trklst.size() << " tracks" << std::endl;
+
+  // --- First, make a map of all cluster keys & track index
+  std::multimap<TrkrDefs::cluskey, unsigned int> key_trk_map;
+
+  for (unsigned int itrk = 0; itrk < trklst.size(); itrk++)
+  {
+    for (unsigned int iclus = 0; iclus < trklst.at(itrk).ClusterList.size(); iclus++)
+    {
+      TrkrDefs::cluskey ckey = trklst.at(itrk).ClusterList.at(iclus)->GetClusKey();
+      key_trk_map.insert(std::make_pair(ckey, itrk));
+    } // iclus
+  } // itrk
+
+  // --- find clusters associated with more than one track and pick the best track
+  std::set<unsigned int> remove_set;
+  for ( auto iter = key_trk_map.begin(); iter != key_trk_map.end(); ++iter)
+  {
+    // get the upper bound for this key
+    auto upiter = key_trk_map.upper_bound(iter->first);
+
+    // iterate over common clusters and get the best track
+    double chi2_best = 9999.;
+    unsigned int idx_best = 0;
+    int ntrk = 0;
+    for ( auto jter = iter; jter != upiter; ++jter)
+    {
+      ntrk++;
+      double chi2 = trklst.at(jter->second).chi2_xy + trklst.at(jter->second).chi2_zy;
+      if ( chi2 < chi2_best && chi2 > 0 )
+      {
+        chi2_best = chi2;
+        idx_best = jter->second;
+      }
+    }
+
+    // FOR TESTING
+    if ( ntrk > 1 && verbosity_ > 1 )
+    {
+      std::cout << PHWHERE << " Tracks sharing cluster:" << ntrk << std::endl;
+      for ( auto jter = iter; jter != upiter; ++jter)
+      {
+        double chi2 = trklst.at(jter->second).chi2_xy + trklst.at(jter->second).chi2_zy;
+        std::cout << "     "
+                  << " trk idx: " << jter->second
+                  << " chi2:" << chi2
+                  << " m_xy:" << trklst.at(jter->second).m_xy;
+
+        if ( jter->second == idx_best)
+        {
+          std::cout << "  <--- BEST" << std::endl;
+        }
+        else
+        {
+          std::cout << std::endl;
+        }
+      }
+    }
+
+    // remove all pairs that aren't the best
+    for ( auto jter = iter; jter != upiter; ++jter)
+    {
+      if ( jter->second != idx_best )
+      {
+        remove_set.insert(jter->second);
+      }
+    }
+  } // iter
+
+
+  // --- Now remove tracks from the track list
+  // reverse iterate so we don't have to keep track of indeces changed by removal
+  if ( verbosity_ > 0 )
+  {
+    std::cout << PHWHERE << " List of idx to remove:";
+    for ( auto it = remove_set.begin(); it != remove_set.end(); ++it)
+    {
+      std::cout << " " << *it;
+    }
+    std::cout << std::endl;
+  }
+
+
+  for ( auto rit = remove_set.rbegin(); rit != remove_set.rend(); ++rit)
+    trklst.erase(trklst.begin() + *rit);
+
+  // --- done
+
+  if ( verbosity_ > 1 )
+  {
+    std::cout << PHWHERE << " Remaining tracks:" << std::endl;
+    for ( unsigned int i = 0; i < trklst.size(); i++)
+    {
+      double chi2 = trklst.at(i).chi2_xy + trklst.at(i).chi2_zy;
+      std::cout << "    chi2:" << chi2 << " m_xy:" << trklst.at(i).m_xy << std::endl;
+    }
+  }
+
+  return;
 }
 
 

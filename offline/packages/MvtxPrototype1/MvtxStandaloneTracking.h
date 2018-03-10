@@ -38,9 +38,15 @@ public:
   //! run tracking
   void RunTracking(PHCompositeNode* topNode, MvtxTrackList &trklst, std::vector<int> &lyrs);
 
+  //! reject ghosts
+  void RunGhostRejection( MvtxTrackList &trklst);
+
   //! set association window
   void SetWindowX(float w) { window_x_ = w; }
   void SetWindowZ(float w) { window_z_ = w; }
+
+  //! set ghost rejection
+  void SetGhostRejection( bool yn ) {}
 
   //! set verbosity
   void Verbosity(int v ) { verbosity_ = v; }
@@ -74,6 +80,9 @@ private:
   float window_x_;
   float window_z_;
 
+  //! ghost rejection
+  bool ghostrejection_;
+  
   // verbosity
   int verbosity_;
 
