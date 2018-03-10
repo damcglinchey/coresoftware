@@ -331,7 +331,7 @@ MvtxStandaloneTracking::TrackFitXY(MvtxTrack &trk)
     X(iclus, 0) = 1;
     X(iclus, 1) = y(iclus);
 
-    Cinv(iclus, iclus) = clus->GetSize(0, 0);
+    Cinv(iclus, iclus) = 2.0 * sqrt(clus->GetSize(0, 0));
   }
 
   TVectorD beta = SolveGLS(X, x, Cinv);
@@ -386,7 +386,7 @@ MvtxStandaloneTracking::TrackFitZY(MvtxTrack &trk)
     X(iclus, 0) = 1;
     X(iclus, 1) = y(iclus);
 
-    Cinv(iclus, iclus) = clus->GetSize(2, 2);
+    Cinv(iclus, iclus) = 2.0 * sqrt(clus->GetSize(2, 2));
   }
 
   TVectorD beta = SolveGLS(X, z, Cinv);
