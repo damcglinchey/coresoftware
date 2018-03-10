@@ -165,86 +165,6 @@ MvtxStandaloneTracking::AssociateClusters(MvtxTrackList &trklst, std::vector<int
     } // clusrange 1
   } // clusrange 0
 
-  /*
-  std::multimap<int, TrkrCluster*> lyrclustermap;
-  TrkrClusterContainer::ConstRange clusrange = clusters_->GetClusters();
-  for ( TrkrClusterContainer::ConstIterator iter = clusrange.first;
-        iter != clusrange.second;
-        ++iter)
-  {
-    TrkrDefs::cluskey ckey = (iter->second)->GetClusKey();
-    int lyr = util.GetLayer(ckey);
-
-    lyrclustermap.insert(std::make_pair(lyr, iter->second));
-  }
-
-  // --- make track candidates
-
-  // layer 0 clusters
-  for ( auto iter0 = lyrclustermap.lower_bound(0);
-        iter0 != lyrclustermap.upper_bound(0);
-        ++iter0)
-  {
-    double mx = (iter0->second)->GetX();
-    double mz = (iter0->second)->GetZ();
-    // layer 1 clusters
-    for ( auto iter1 = lyrclustermap.lower_bound(1);
-          iter1 != lyrclustermap.upper_bound(1);
-          ++iter1)
-    {
-      mx += (iter1->second)->GetX();
-      mz += (iter1->second)->GetZ();
-
-      // layer 2 clusters
-      for ( auto iter2 = lyrclustermap.lower_bound(2);
-            iter2 != lyrclustermap.upper_bound(2);
-            ++iter2)
-      {
-        mx += (iter2->second)->GetX();
-        mz += (iter2->second)->GetZ();
-
-        for ( auto iter3 = lyrclustermap.lower_bound(3);
-              iter3 != lyrclustermap.upper_bound(3);
-              ++iter3)
-        {
-          mx += (iter3->second)->GetX();
-          mz += (iter3->second)->GetZ();
-
-          // average
-          mx /= 4.;
-          mz /= 4.;
-
-          // check windows
-          if ( fabs((iter0->second)->GetX() - mx) > window_x_ ||
-               fabs((iter0->second)->GetZ() - mz) > window_z_ )
-            continue;
-
-          if ( fabs((iter1->second)->GetX() - mx) > window_x_ ||
-               fabs((iter1->second)->GetZ() - mz) > window_z_ )
-            continue;
-
-          if ( fabs((iter2->second)->GetX() - mx) > window_x_ ||
-               fabs((iter2->second)->GetZ() - mz) > window_z_ )
-            continue;
-
-          if ( fabs((iter3->second)->GetX() - mx) > window_x_ ||
-               fabs((iter3->second)->GetZ() - mz) > window_z_ )
-            continue;
-
-          // make candidate
-          MvtxTrack trk;
-          (trk.ClusterList).push_back(iter0->second);
-          (trk.ClusterList).push_back(iter1->second);
-          (trk.ClusterList).push_back(iter2->second);
-          (trk.ClusterList).push_back(iter3->second);
-
-          trklst.push_back(trk);
-        } // layer 3
-      } // layer 2
-    } // layer 1
-  } // layer 0
-  */
-
 }
 
 
@@ -324,7 +244,7 @@ MvtxStandaloneTracking::TrackFitXY(MvtxTrack &trk)
 
     chi2 += pow(dx, 2) / clus->GetError(0, 0);
   }
-  chi2 /= double(m);
+  chi2 /= double(m - 2);
   trk.chi2_xy = chi2;
 
   return;
@@ -379,7 +299,7 @@ MvtxStandaloneTracking::TrackFitZY(MvtxTrack &trk)
 
     chi2 += pow(dz, 2) / clus->GetError(2, 2);
   }
-  chi2 /= double(m);
+  chi2 /= double(m - 2);
   trk.chi2_zy = chi2;
 
   return;
