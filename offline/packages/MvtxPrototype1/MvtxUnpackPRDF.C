@@ -72,6 +72,11 @@ MvtxUnpackPRDF::process_event(PHCompositeNode *topNode)
 		cout << "MvtxUnpackPRDF::Process_Event - Event not found" << endl;
 		return -1;
 	}
+	if (_event->getEvtType()!=1)
+	{
+		cout << "MvtxUnpackPRDF::Process_Event - non-data event type " << _event->getEvtType() << endl;
+		return -1;
+	}
 
 	_hitsetcon = findNode::getClass<TrkrHitSetContainer>(topNode, "TrkrHitSetContainer");
 	if (_hitsetcon==0)
@@ -215,6 +220,9 @@ MvtxUnpackPRDF::MakeHits()
 		for (int ichip=0; ichip<chipmax; ichip++)
 		{
 
+			int header_found = p->iValue(ichip, "HEADER_FOUND");
+			int trailer_found = p->iValue(ichip, "TRAILER_FOUND");
+			if (header_found==0 || trailer_found==0) continue;
 			TrkrDefs::hitsetkey mvtx_hitsetkey = mvtxdef->GenHitSetKey(char(ichip),uint8_t(0),uint8_t(ichip));
 
 			for (int irow=0; irow<NROW; irow++)
@@ -273,7 +281,7 @@ MvtxUnpackPRDF::MakeHits()
 
 			int nhits = 0;
 			for (int ichip=0; ichip<NCHIP; ichip++){
-				TrkrDefs::hitsetkey mvtx_hitsetkey = mvtxdef->GenHitSetKey(char(0),uint8_t(0),uint8_t(ichip));
+				TrkrDefs::hitsetkey mvtx_hitsetkey = mvtxdef->GenHitSetKey(char(ichip),uint8_t(0),uint8_t(ichip));
 				MvtxHitSetv1 *hitset = static_cast<MvtxHitSetv1 *>(_hitsetcon->FindHitSet(mvtx_hitsetkey));
 				MvtxHitSetv1::ConstRange itr_range = hitset->GetHits();
 
